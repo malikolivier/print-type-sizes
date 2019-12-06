@@ -3,7 +3,7 @@ extern crate gag;
 
 use std::env;
 use std::error;
-use std::io::Read;
+use std::io::{self, BufRead, Read};
 
 use cargo::core;
 use cargo::core::compiler::CompileMode;
@@ -28,18 +28,21 @@ fn compile() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
+fn parse_output<R: Read>(stdout: R) {
+    let f = io::BufReader::new(stdout);
+    for line in f.lines() {
+        eprintln!("{:?}", line);
+    }
+}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
     set_rust_flags();
-
-    let mut output = String::new();
 
     {
         let mut stdout = gag::BufferRedirect::stdout()?;
         compile()?;
-        stdout.read_to_string(&mut output).unwrap();
+        parse_output(&mut stdout);
     }
-
-    println!("{}", output);
 
     Ok(())
 }
