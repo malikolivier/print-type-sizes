@@ -24,6 +24,14 @@ fn compile() -> Result<(), Box<dyn error::Error>> {
     let options = ops::CompileOptions::new(&config, CompileMode::Build)?;
     let path = env::current_dir()?.join("Cargo.toml");
     let ws = core::Workspace::new(&path, &config)?;
+    let clean_options = ops::CleanOptions {
+        config: &config,
+        spec: Vec::new(),
+        target: None,
+        release: false,
+        doc: false,
+    };
+    ops::clean(&ws, &clean_options)?;
     ops::compile(&ws, &options)?;
     Ok(())
 }
