@@ -21,7 +21,7 @@ fn set_rust_flags() {
 
 fn compile() -> Result<(), Box<dyn error::Error>> {
     let config = Config::default()?;
-    let options = ops::CompileOptions::new(&config, CompileMode::Check { test: false })?;
+    let options = ops::CompileOptions::new(&config, CompileMode::Build)?;
     let path = env::current_dir()?.join("Cargo.toml");
     let ws = core::Workspace::new(&path, &config)?;
     ops::compile(&ws, &options)?;
