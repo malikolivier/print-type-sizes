@@ -28,6 +28,7 @@ fn compile() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
+#[derive(PartialEq, Eq)]
 struct Type {
     name: String,
     size: usize,
@@ -69,6 +70,7 @@ fn parse_output<R: Read>(stdout: R) -> Vec<Type> {
         Ordering::Equal => t1.name.cmp(&t2.name),
         ord => ord,
     });
+    types.dedup();
 
     types
 }
