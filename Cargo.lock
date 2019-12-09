@@ -679,6 +679,7 @@ name = "print-type-sizes"
 version = "0.1.0"
 dependencies = [
  "cargo 0.40.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "gag 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

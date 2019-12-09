@@ -1,14 +1,17 @@
 extern crate cargo;
+extern crate clap;
 extern crate gag;
 
 use std::env;
 use std::error;
+use std::fmt;
 use std::io::{self, BufRead, Read};
 
 use cargo::core;
 use cargo::core::compiler::CompileMode;
 use cargo::ops;
 use cargo::util::config::Config;
+use clap::{App, Arg};
 
 fn set_rust_flags() {
     let rust_flags = if let Ok(flags) = env::var("RUSTFLAGS") {
@@ -36,7 +39,7 @@ fn compile() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 struct Type {
     name: String,
     size: usize,
@@ -83,7 +86,43 @@ fn parse_output<R: Read>(stdout: R) -> Vec<Type> {
     types
 }
 
+#[derive(Debug)]
+struct TypeTooLargeError {
+    t: Type,
+    max_size: usize,
+}
+impl fmt::Display for TypeTooLargeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(
+            f,
+            "Type `{}` is {} bytes large, which is larger than {} bytes.",
+            &self.t.name, self.t.size, self.max_size
+        )
+    }
+}
+
+impl error::Error for TypeTooLargeError {}
+
 fn main() -> Result<(), Box<dyn error::Error>> {
+    let matches = App::new("print-type-sizes")
+        .version("0.1")
+        .author("Malik Olivier Boussejra <malik@boussejra.com>")
+        .about("Print the sizes of all types used in a rust project")
+        .arg(
+            Arg::with_name("max-size")
+                .short("M")
+                .long("max-size")
+                .value_name("SIZE")
+                .help("Error out when a type is bigger than this size (in bytes)")
+                .takes_value(true),
+        )
+        .get_matches();
+    let max_size: Option<usize> = if let Some(max_size) = matches.value_of("max-size") {
+        Some(max_size.parse()?)
+    } else {
+        None
+    };
+
     set_rust_flags();
 
     let types = {
@@ -92,8 +131,16 @@ fn main() -> Result<(), Box<dyn error::Error>> {
         parse_output(&mut stdout)
     };
 
-    for t in types {
-        println!("{}\t{}", t.name, t.size);
+    if let Some(max_size) = max_size {
+        for t in types {
+            if t.size >= max_size {
+                return Err(Box::new(TypeTooLargeError { t, max_size }));
+            }
+        }
+    } else {
+        for t in types {
+            println!("{}\t{}", t.name, t.size);
+        }
     }
 
     Ok(())

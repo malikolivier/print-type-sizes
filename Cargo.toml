@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 cargo = "0.40"
+clap = "2.33"
 gag = "0.1"
