@@ -1,5 +1,7 @@
 # print-type-sizes
 
+[![Latest release on crates.io](https://meritbadge.herokuapp.com/print-type-sizes)](https://crates.io/crates/print-type-sizes)
+
 Print the size of all types in use by a rust project.
 Rust nightly is required.
 
